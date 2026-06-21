@@ -92,7 +92,7 @@ export default function ZapatillasDashboard() {
     <>
       <PageHeader
         title="Zapatillas"
-        subtitle="Kilómetros y estado de cada par"
+        icon={<Footprints size={26} />}
         actions={
           <LinkButton href="/zapatillas/registro" variant="primary">
             Registro

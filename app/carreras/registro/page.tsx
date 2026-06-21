@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, LayoutDashboard, Download, Pencil, Trash2, Search } from "lucide-react";
 import { useAppStore } from "@/lib/store/AppStore";
 import { categoriaDeDistancia } from "@/lib/data/types";
-import { formatTiempo, formatRitmo, formatFecha } from "@/lib/format";
+import { formatTiempo, formatRitmo, formatRitmoCorto, formatFecha } from "@/lib/format";
 import { descargaCsv } from "@/lib/csv";
 import { PageHeader, Card, LinkButton, Button, IconButton, EmptyState, Badge } from "@/components/ui";
 import { FilterBar, FilterField, Select, Input } from "@/components/form";
@@ -51,7 +51,7 @@ export default function CarrerasRegistro() {
       { header: "Tipo", value: (r) => r.tipo },
       { header: "Estilo", value: (r) => r.estilo },
       { header: "Tiempo", value: (r) => formatTiempo(r.tiempoSeg) },
-      { header: "Media/km", value: (r) => (r.mediaSeg != null ? formatRitmo(r.mediaSeg).replace(" /km", "") : "") },
+      { header: "Media/km", value: (r) => (r.mediaSeg != null ? formatRitmoCorto(r.mediaSeg) : "") },
       { header: "Dorsal", value: (r) => r.dorsal ?? "" },
       { header: "Posición", value: (r) => r.posicion ?? "" },
     ]);

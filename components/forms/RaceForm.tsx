@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Distancia, EstiloCarrera, RaceRecord, TipoCarrera } from "@/lib/data/types";
-import { formatRitmo, formatTiempo } from "@/lib/format";
+import { formatRitmoCorto, formatTiempo } from "@/lib/format";
 import { Card, Button } from "@/components/ui";
 import { Field, Input, Select } from "@/components/form";
 
@@ -17,7 +17,7 @@ function tiempoEditable(seg: number | null): string {
 }
 function ritmoEditable(seg: number | null): string {
   if (seg == null) return "";
-  return formatRitmo(seg).replace(" /km", "");
+  return formatRitmoCorto(seg);
 }
 
 /** Parsea "h:mm:ss" o "mm:ss" o segundos a número de segundos. */

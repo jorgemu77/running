@@ -31,10 +31,9 @@ export default function KilometrosDashboard() {
   const anioActual = porAnio[porAnio.length - 1] ?? { year: 0, km: 0 };
 
   const dataAnios = porAnio.map((p) => ({ anio: String(p.year), km: Math.round(p.km) }));
-  const dataMeses = kmPorMesDeAnio(kilometros, anio).map((m) => ({
-    mes: mesCorto(m.month),
-    km: Math.round(m.km),
-  }));
+  const dataMeses = kmPorMesDeAnio(kilometros, anio)
+    .map((m) => ({ mes: mesCorto(m.month), km: Math.round(m.km) }))
+    .filter((m) => m.km > 0);
 
   // Estacionalidad: media de km por mes a lo largo de todos los años.
   const estacionalidad = useMemo(() => {
@@ -54,7 +53,7 @@ export default function KilometrosDashboard() {
     <>
       <PageHeader
         title="Kilómetros"
-        subtitle="Histórico de kilómetros recorridos por año y mes"
+        icon={<Route size={26} />}
         actions={
           <LinkButton href="/kilometros/registro" variant="primary">
             Registro
@@ -79,7 +78,7 @@ export default function KilometrosDashboard() {
         />
         <StatCard
           icon={<Gauge size={18} />}
-          label="Media mensual"
+          label="Media mensual histórico"
           value={`${formatKm(media)} km`}
           sub="Sobre meses registrados"
           accent="mint"
@@ -93,31 +92,29 @@ export default function KilometrosDashboard() {
         />
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <ChartCard title="Kilómetros por año" className="lg:col-span-2">
+      <div className="mt-4 flex flex-col gap-4">
+        <ChartCard title="Kilómetros por año">
           <BarsChart
             data={dataAnios}
             xKey="anio"
             bars={[{ key: "km", color: PALETA.brand }]}
             fmt={(v) => `${formatKm(v)} km`}
-            height={280}
+            height={300}
           />
         </ChartCard>
 
-        <ChartCard title="Media por mes" action={<span className="text-xs text-muted">todos los años</span>}>
+        <ChartCard title="Kilómetros por mes" action={<span className="text-xs text-muted">media histórica | todos los años</span>}>
           <BarsChart
             data={estacionalidad}
             xKey="mes"
             bars={[{ key: "km", color: PALETA.sky }]}
             fmt={(v) => `${formatKm(v)} km`}
-            height={280}
+            height={300}
           />
         </ChartCard>
-      </div>
 
-      <div className="mt-4">
         <ChartCard
-          title={`Kilómetros por mes · ${anio}`}
+          title={`Kilómetros por mes y año | ${anio}`}
           action={
             <Select
               value={anio}

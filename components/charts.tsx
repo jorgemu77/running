@@ -15,7 +15,9 @@ import {
   Cell,
   Area,
   AreaChart,
+  LabelList,
 } from "recharts";
+import { formatNum, formatInt, formatRitmo, formatRitmoCorto, formatTiempo } from "@/lib/format";
 
 export const PALETA = {
   brand: "#bcd93a",
@@ -27,6 +29,7 @@ export const PALETA = {
   ink: "#1b2230",
   muted: "#7b8493",
   grid: "#eef1f6",
+  rojo: "#ef4444",
 };
 
 export const CATEGORIA_COLOR = {
@@ -35,13 +38,19 @@ export const CATEGORIA_COLOR = {
   MARATON: PALETA.coral,
 } as const;
 
+// Tipo de carrera
+export const TIPO_COLOR = {
+  COMPETENCIA: PALETA.brand,
+  ACOMPAÑAMIENTO: PALETA.sky,
+} as const;
+
 const axisProps = {
   tick: { fontSize: 11, fill: PALETA.muted },
   axisLine: false,
   tickLine: false,
 };
 
-type TooltipFmt = (value: number) => string;
+type Fmt = (value: number) => string;
 
 function tooltipStyle() {
   return {
@@ -54,48 +63,108 @@ function tooltipStyle() {
   };
 }
 
-/* ---------- Barras ---------- */
+/* ---------- Barras (con etiqueta de valor encima) ---------- */
 
 export function BarsChart({
   data,
   xKey,
   bars,
   height = 260,
-  fmt,
+  fmt = formatNum,
 }: {
   data: Record<string, unknown>[];
   xKey: string;
   bars: { key: string; color: string; name?: string }[];
   height?: number;
-  fmt?: TooltipFmt;
+  fmt?: Fmt;
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+      <BarChart data={data} margin={{ top: 22, right: 8, left: -16, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
         <XAxis dataKey={xKey} {...axisProps} />
         <YAxis {...axisProps} />
         <Tooltip
           {...tooltipStyle()}
-          formatter={(value) => [fmt ? fmt(Number(value)) : String(value ?? ""), ""]}
+          formatter={(value) => [fmt(Number(value)), ""]}
           cursor={{ fill: "rgba(123,132,147,0.06)" }}
         />
         {bars.map((b) => (
-          <Bar
-            key={b.key}
-            dataKey={b.key}
-            name={b.name ?? b.key}
-            fill={b.color}
-            radius={[6, 6, 0, 0]}
-            maxBarSize={46}
-          />
+          <Bar key={b.key} dataKey={b.key} name={b.name ?? b.key} fill={b.color} radius={[6, 6, 0, 0]} maxBarSize={46}>
+            <LabelList
+              dataKey={b.key}
+              position="top"
+              fontSize={11}
+              fontWeight={600}
+              fill={PALETA.ink}
+              formatter={(value: unknown) => fmt(Number(value))}
+            />
+          </Bar>
         ))}
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-/* ---------- Línea / Área ---------- */
+/* ---------- Barras apiladas por TIPO de carrera ---------- */
+
+export function CarrerasPorAnioChart({
+  data,
+  height = 280,
+}: {
+  data: { anio: string; COMPETENCIA: number; ACOMPAÑAMIENTO: number }[];
+  height?: number;
+}) {
+  const totales = data.map((d) => d.COMPETENCIA + d.ACOMPAÑAMIENTO);
+
+  return (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart data={data} margin={{ top: 22, right: 8, left: -16, bottom: 0 }}>
+        <CartesianGrid vertical={false} stroke={PALETA.grid} />
+        <XAxis dataKey="anio" {...axisProps} />
+        <YAxis {...axisProps} allowDecimals={false} />
+        <Tooltip {...tooltipStyle()} cursor={{ fill: "rgba(123,132,147,0.06)" }} />
+        <Bar dataKey="COMPETENCIA" name="Competencia" stackId="a" fill={TIPO_COLOR.COMPETENCIA} maxBarSize={46}>
+          <LabelList
+            dataKey="COMPETENCIA"
+            position="center"
+            fontSize={11}
+            fontWeight={700}
+            fill={PALETA.ink}
+            formatter={(value: unknown) => (Number(value) > 0 ? formatInt(Number(value)) : "")}
+          />
+        </Bar>
+        <Bar dataKey="ACOMPAÑAMIENTO" name="Acompañamiento" stackId="a" fill={TIPO_COLOR.ACOMPAÑAMIENTO} radius={[6, 6, 0, 0]} maxBarSize={46}>
+          <LabelList
+            dataKey="ACOMPAÑAMIENTO"
+            position="center"
+            fontSize={11}
+            fontWeight={700}
+            fill={PALETA.ink}
+            formatter={(value: unknown) => (Number(value) > 0 ? formatInt(Number(value)) : "")}
+          />
+          <LabelList
+            dataKey="ACOMPAÑAMIENTO"
+            position="top"
+            content={(props: { x?: string | number; y?: string | number; width?: string | number; index?: number }) => {
+              const { x, y, width, index } = props;
+              if (index == null) return null;
+              const total = totales[index];
+              const cx = Number(x) + Number(width) / 2;
+              return (
+                <text x={cx} y={Number(y) - 6} textAnchor="middle" fontSize={11} fontWeight={700} fill={PALETA.ink}>
+                  {formatInt(total)}
+                </text>
+              );
+            }}
+          />
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+/* ---------- Área (tendencia, con etiquetas) ---------- */
 
 export function AreaTrend({
   data,
@@ -103,19 +172,19 @@ export function AreaTrend({
   yKey,
   color = PALETA.brand,
   height = 260,
-  fmt,
+  fmt = formatNum,
 }: {
   data: Record<string, unknown>[];
   xKey: string;
   yKey: string;
   color?: string;
   height?: number;
-  fmt?: TooltipFmt;
+  fmt?: Fmt;
 }) {
   const gid = `grad-${yKey}`;
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 24, right: 12, left: -16, bottom: 0 }}>
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity={0.35} />
@@ -125,53 +194,107 @@ export function AreaTrend({
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
         <XAxis dataKey={xKey} {...axisProps} />
         <YAxis {...axisProps} />
-        <Tooltip {...tooltipStyle()} formatter={(value) => [fmt ? fmt(Number(value)) : String(value ?? ""), ""]} />
-        <Area
-          type="monotone"
-          dataKey={yKey}
-          stroke={color}
-          strokeWidth={2.5}
-          fill={`url(#${gid})`}
-          dot={false}
-          activeDot={{ r: 4 }}
-        />
+        <Tooltip {...tooltipStyle()} formatter={(value) => [fmt(Number(value)), ""]} />
+        <Area type="monotone" dataKey={yKey} stroke={color} strokeWidth={2.5} fill={`url(#${gid})`} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }}>
+          <LabelList
+            dataKey={yKey}
+            position="top"
+            fontSize={10}
+            fontWeight={600}
+            fill={PALETA.ink}
+            formatter={(value: unknown) => fmt(Number(value))}
+          />
+        </Area>
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
-export function LinesChart({
-  data,
-  xKey,
-  lines,
-  height = 260,
-  fmt,
+/* ---------- Ritmo medio por carrera (línea con puntos) ---------- */
+
+export type RitmoPunto = {
+  label: string;
+  ritmo: number; // segundos/km
+  alerta?: boolean;
+  carrera?: string;
+  lugar?: string;
+  tiempo?: number | null; // tiempo neto en segundos
+};
+
+function RitmoTooltip({
+  active,
+  payload,
 }: {
-  data: Record<string, unknown>[];
-  xKey: string;
-  lines: { key: string; color: string; name?: string }[];
+  active?: boolean;
+  payload?: { payload: RitmoPunto }[];
+}) {
+  if (!active || !payload || payload.length === 0) return null;
+  const p = payload[0].payload;
+  return (
+    <div
+      style={{
+        borderRadius: 12,
+        border: "1px solid #eef1f6",
+        boxShadow: "0 4px 16px rgba(16,24,40,0.08)",
+        background: "#fff",
+        padding: "8px 10px",
+        fontSize: 12,
+      }}
+    >
+      {p.carrera && <div style={{ fontWeight: 700, marginBottom: 2 }}>{p.carrera}</div>}
+      {p.lugar && <div style={{ color: "#7b8493" }}>{p.lugar}</div>}
+      <div>Tiempo: {formatTiempo(p.tiempo)}</div>
+      <div>Ritmo: {formatRitmo(p.ritmo)}</div>
+    </div>
+  );
+}
+
+export function RitmoChart({
+  data,
+  height = 260,
+}: {
+  data: RitmoPunto[];
   height?: number;
-  fmt?: TooltipFmt;
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 24, right: 16, left: 8, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
-        <XAxis dataKey={xKey} {...axisProps} />
-        <YAxis {...axisProps} />
-        <Tooltip {...tooltipStyle()} formatter={(value) => [fmt ? fmt(Number(value)) : String(value ?? ""), ""]} />
-        {lines.map((l) => (
-          <Line
-            key={l.key}
-            type="monotone"
-            dataKey={l.key}
-            name={l.name ?? l.key}
-            stroke={l.color}
-            strokeWidth={2.5}
-            dot={false}
-            activeDot={{ r: 4 }}
+        <XAxis dataKey="label" {...axisProps} />
+        {/* Eje Y oculto, horquilla fija 3:00–6:00 min/Km */}
+        <YAxis hide domain={[180, 360]} />
+        <Tooltip content={<RitmoTooltip />} />
+        <Line
+          type="monotone"
+          dataKey="ritmo"
+          stroke={PALETA.sky}
+          strokeWidth={2.5}
+          dot={(props: { cx?: number; cy?: number; index?: number; payload?: { alerta?: boolean } }) => {
+            const { cx, cy, index, payload } = props;
+            const rojo = payload?.alerta;
+            return (
+              <circle
+                key={index}
+                cx={cx}
+                cy={cy}
+                r={4.5}
+                fill={rojo ? PALETA.rojo : PALETA.sky}
+                stroke="#fff"
+                strokeWidth={1.5}
+              />
+            );
+          }}
+          activeDot={{ r: 6 }}
+        >
+          <LabelList
+            dataKey="ritmo"
+            position="top"
+            fontSize={10}
+            fontWeight={600}
+            fill={PALETA.ink}
+            formatter={(value: unknown) => formatRitmoCorto(Number(value))}
           />
-        ))}
+        </Line>
       </LineChart>
     </ResponsiveContainer>
   );
@@ -184,32 +307,24 @@ export function DonutChart({
   height = 240,
   centerTop,
   centerBottom,
-  fmt,
+  fmt = formatInt,
 }: {
   data: { name: string; value: number; color: string }[];
   height?: number;
   centerTop?: string;
   centerBottom?: string;
-  fmt?: TooltipFmt;
+  fmt?: Fmt;
 }) {
   return (
     <div className="relative" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie
-            data={data}
-            dataKey="value"
-            nameKey="name"
-            innerRadius="62%"
-            outerRadius="92%"
-            paddingAngle={2}
-            stroke="none"
-          >
+          <Pie data={data} dataKey="value" nameKey="name" innerRadius="62%" outerRadius="92%" paddingAngle={2} stroke="none">
             {data.map((d) => (
               <Cell key={d.name} fill={d.color} />
             ))}
           </Pie>
-          <Tooltip {...tooltipStyle()} formatter={(value) => [fmt ? fmt(Number(value)) : String(value ?? ""), ""]} />
+          <Tooltip {...tooltipStyle()} formatter={(value) => [fmt(Number(value)), ""]} />
         </PieChart>
       </ResponsiveContainer>
       {(centerTop || centerBottom) && (

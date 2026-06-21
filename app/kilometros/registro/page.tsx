@@ -47,7 +47,7 @@ export default function KilometrosRegistro() {
     <>
       <PageHeader
         title="Registro de kilómetros"
-        subtitle={`${filtrados.length} registros · ${formatKm(totalFiltrado)} km`}
+        subtitle={`${filtrados.length} registros | ${formatKm(totalFiltrado)} km`}
         actions={
           <>
             <LinkButton href="/kilometros/registro/nuevo" variant="primary">
@@ -141,7 +141,7 @@ export default function KilometrosRegistro() {
                     </td>
                     <td className="px-5 py-2.5 font-medium">{r.year}</td>
                     <td className="px-5 py-2.5">{mesLargo(r.month)}</td>
-                    <td className="px-5 py-2.5 text-right font-semibold">{formatKm(r.km, 2)}</td>
+                    <td className="px-5 py-2.5 text-right font-semibold">{formatKm(r.km)}</td>
                   </tr>
                 ))}
               </tbody>

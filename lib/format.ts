@@ -38,21 +38,32 @@ export function mesLargo(month: number): string {
   return MESES_LARGOS[month - 1] ?? "";
 }
 
-/** Formatea km con separador de miles y decimales opcionales. */
-export function formatKm(n: number | null | undefined, decimals = 0): string {
+/**
+ * Formato numérico europeo: miles con "." y decimales con ",".
+ * Siempre 2 decimales, salvo que sean "00" (o el número sea entero) → sin decimales.
+ */
+export function formatNum(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
-  return n.toLocaleString("es-ES", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+  const sign = n < 0 ? "-" : "";
+  const fixed = Math.abs(n).toFixed(2);
+  const [intRaw, decRaw] = fixed.split(".");
+  const intPart = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return decRaw === "00" ? `${sign}${intPart}` : `${sign}${intPart},${decRaw}`;
 }
 
-export function formatNumber(n: number | null | undefined, decimals = 0): string {
+/** Alias para kilómetros (mismo formato europeo). */
+export function formatKm(n: number | null | undefined): string {
+  return formatNum(n);
+}
+
+export function formatNumber(n: number | null | undefined): string {
+  return formatNum(n);
+}
+
+/** Entero con miles "." (para contadores). */
+export function formatInt(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
-  return n.toLocaleString("es-ES", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
+  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 /** Segundos -> "h:mm:ss" (o "mm:ss" si <1h). */
@@ -67,13 +78,19 @@ export function formatTiempo(seg: number | null | undefined): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
 }
 
-/** Segundos por km -> "m:ss /km". */
+/** Segundos por km -> "m:ss min/Km". */
 export function formatRitmo(seg: number | null | undefined): string {
+  if (seg === null || seg === undefined || Number.isNaN(seg)) return "—";
+  return `${formatRitmoCorto(seg)} min/Km`;
+}
+
+/** Segundos por km -> "m:ss" (sin unidad, para inputs y ejes). */
+export function formatRitmoCorto(seg: number | null | undefined): string {
   if (seg === null || seg === undefined || Number.isNaN(seg)) return "—";
   const s = Math.round(seg);
   const m = Math.floor(s / 60);
   const sec = s % 60;
-  return `${m}:${String(sec).padStart(2, "0")} /km`;
+  return `${m}:${String(sec).padStart(2, "0")}`;
 }
 
 /** ISO yyyy-mm-dd -> "14 sep 2014". */
