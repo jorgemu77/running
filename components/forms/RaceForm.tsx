@@ -45,9 +45,10 @@ export function RaceForm({
   onSubmit,
 }: {
   initial?: RaceFormValues;
-  onSubmit: (values: RaceFormValues) => void;
+  onSubmit: (values: RaceFormValues) => void | Promise<void>;
 }) {
   const router = useRouter();
+  const [guardando, setGuardando] = useState(false);
   const [fecha, setFecha] = useState(initial?.fecha ?? "");
   const [carrera, setCarrera] = useState(initial?.carrera ?? "");
   const [lugar, setLugar] = useState(initial?.lugar ?? "");
@@ -59,21 +60,27 @@ export function RaceForm({
   const [dorsal, setDorsal] = useState(initial?.dorsal != null ? String(initial.dorsal) : "");
   const [posicion, setPosicion] = useState(initial?.posicion != null ? String(initial.posicion) : "");
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit({
-      fecha,
-      carrera: carrera.trim(),
-      lugar: lugar.trim(),
-      distancia,
-      tipo,
-      estilo,
-      tiempoSeg: parseSeg(tiempo),
-      mediaSeg: parseSeg(media),
-      dorsal: numOrNull(dorsal),
-      posicion: numOrNull(posicion),
-    });
-    router.push("/carreras/registro");
+    setGuardando(true);
+    try {
+      await onSubmit({
+        fecha,
+        carrera: carrera.trim(),
+        lugar: lugar.trim(),
+        distancia,
+        tipo,
+        estilo,
+        tiempoSeg: parseSeg(tiempo),
+        mediaSeg: parseSeg(media),
+        dorsal: numOrNull(dorsal),
+        posicion: numOrNull(posicion),
+      });
+      router.push("/carreras/registro");
+    } catch (err) {
+      setGuardando(false);
+      alert("No se pudo guardar: " + (err instanceof Error ? err.message : String(err)));
+    }
   }
 
   return (
@@ -133,7 +140,7 @@ export function RaceForm({
         </div>
 
         <div className="mt-2 flex items-center gap-2">
-          <Button type="submit" variant="primary">Guardar</Button>
+          <Button type="submit" variant="primary" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button>
           <Button type="button" variant="secondary" onClick={() => router.back()}>Cancelar</Button>
         </div>
       </form>

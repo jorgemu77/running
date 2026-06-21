@@ -31,3 +31,7 @@ Thumbs.db
 skills-lock.json
 .vscode/
 .idea/
+
+# Scripts de migración (solo local, no necesarios en producción)
+scripts/gen-seed.ts
+scripts/seed.sql

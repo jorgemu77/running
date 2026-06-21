@@ -40,7 +40,29 @@ export async function updateSession(request: NextRequest) {
   );
 
   // IMPORTANTE: no ejecutar código entre createServerClient y getUser().
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+
+  // Sin sesión: solo se permite /login.
+  if (!user && path !== "/login") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    const redirect = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    return redirect;
+  }
+
+  // Con sesión: /login redirige al dashboard.
+  if (user && path === "/login") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/kilometros";
+    const redirect = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((c) => redirect.cookies.set(c));
+    return redirect;
+  }
 
   return supabaseResponse;
 }

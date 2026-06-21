@@ -12,8 +12,11 @@ import {
   X,
   ChevronDown,
   CircleUser,
+  LogOut,
+  Loader2,
 } from "lucide-react";
 import { cn } from "./ui";
+import { useAppStore } from "@/lib/store/AppStore";
 
 type NavChild = { label: string; href: string };
 type NavItem = {
@@ -116,14 +119,22 @@ function Logo() {
   );
 }
 
-function UserChip() {
+function UserChip({ email, onSignOut }: { email: string | null; onSignOut: () => void }) {
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-line bg-page/60 p-3">
-      <CircleUser size={32} className="text-muted" />
-      <div className="min-w-0">
-        <div className="truncate text-sm font-semibold">jorgemu77</div>
+      <CircleUser size={32} className="shrink-0 text-muted" />
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-sm font-semibold">{email ?? "—"}</div>
         <div className="truncate text-xs text-muted">Sesión iniciada</div>
       </div>
+      <button
+        onClick={onSignOut}
+        title="Cerrar sesión"
+        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-page hover:text-ink"
+        aria-label="Cerrar sesión"
+      >
+        <LogOut size={16} />
+      </button>
     </div>
   );
 }
@@ -131,11 +142,15 @@ function UserChip() {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { loading, userEmail, signOut } = useAppStore();
 
   // Cerrar el drawer al cambiar de ruta.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  // La página de login se muestra sin el armazón (sidebar, etc.).
+  if (pathname === "/login") return <>{children}</>;
 
   return (
     <div className="min-h-screen">
@@ -143,7 +158,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 border-r border-line bg-card p-5 lg:flex">
         <Logo />
         <NavContent />
-        <UserChip />
+        <UserChip email={userEmail} onSignOut={signOut} />
       </aside>
 
       {/* Barra superior (móvil) */}
@@ -177,7 +192,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </button>
             </div>
             <NavContent onNavigate={() => setOpen(false)} />
-            <UserChip />
+            <UserChip email={userEmail} onSignOut={signOut} />
           </aside>
         </div>
       )}
@@ -185,7 +200,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Contenido */}
       <main className="lg:pl-64">
         <div className="mx-auto w-full max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          {children}
+          {loading ? (
+            <div className="flex min-h-[60vh] items-center justify-center text-muted">
+              <Loader2 className="animate-spin" size={28} />
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
     </div>

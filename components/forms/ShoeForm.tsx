@@ -14,24 +14,31 @@ export function ShoeForm({
   onSubmit,
 }: {
   initial?: ShoeFormValues;
-  onSubmit: (values: ShoeFormValues) => void;
+  onSubmit: (values: ShoeFormValues) => void | Promise<void>;
 }) {
   const router = useRouter();
   const [nombre, setNombre] = useState(initial?.nombre ?? "");
   const [marca, setMarca] = useState(initial?.marca ?? "");
   const [estado, setEstado] = useState<EstadoZapatilla>(initial?.estado ?? "ACTIVAS");
   const [foto, setFoto] = useState(initial?.foto ?? "");
+  const [guardando, setGuardando] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit({
-      nombre: nombre.trim(),
-      marca: marca.trim(),
-      estado,
-      foto: foto.trim() || null,
-      meses: initial?.meses ?? [],
-    });
-    router.push("/zapatillas/registro");
+    setGuardando(true);
+    try {
+      await onSubmit({
+        nombre: nombre.trim(),
+        marca: marca.trim(),
+        estado,
+        foto: foto.trim() || null,
+        meses: initial?.meses ?? [],
+      });
+      router.push("/zapatillas/registro");
+    } catch (err) {
+      setGuardando(false);
+      alert("No se pudo guardar: " + (err instanceof Error ? err.message : String(err)));
+    }
   }
 
   return (
@@ -72,7 +79,7 @@ export function ShoeForm({
         </Field>
 
         <div className="mt-2 flex items-center gap-2">
-          <Button type="submit" variant="primary">Guardar</Button>
+          <Button type="submit" variant="primary" disabled={guardando}>{guardando ? "Guardando…" : "Guardar"}</Button>
           <Button type="button" variant="secondary" onClick={() => router.back()}>Cancelar</Button>
         </div>
       </form>

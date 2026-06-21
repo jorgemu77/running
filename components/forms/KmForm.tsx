@@ -14,18 +14,25 @@ export function KmForm({
   onSubmit,
 }: {
   initial?: KmFormValues;
-  onSubmit: (values: KmFormValues) => void;
+  onSubmit: (values: KmFormValues) => void | Promise<void>;
 }) {
   const router = useRouter();
   const ahora = new Date();
   const [year, setYear] = useState(String(initial?.year ?? ahora.getFullYear()));
   const [month, setMonth] = useState(String(initial?.month ?? ahora.getMonth() + 1));
   const [km, setKm] = useState(initial ? String(initial.km) : "");
+  const [guardando, setGuardando] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit({ year: Number(year), month: Number(month), km: Number(km) || 0 });
-    router.push("/kilometros/registro");
+    setGuardando(true);
+    try {
+      await onSubmit({ year: Number(year), month: Number(month), km: Number(km) || 0 });
+      router.push("/kilometros/registro");
+    } catch (err) {
+      setGuardando(false);
+      alert("No se pudo guardar: " + (err instanceof Error ? err.message : String(err)));
+    }
   }
 
   return (
@@ -66,8 +73,8 @@ export function KmForm({
         </Field>
 
         <div className="mt-2 flex items-center gap-2">
-          <Button type="submit" variant="primary">
-            Guardar
+          <Button type="submit" variant="primary" disabled={guardando}>
+            {guardando ? "Guardando…" : "Guardar"}
           </Button>
           <Button type="button" variant="secondary" onClick={() => router.back()}>
             Cancelar
