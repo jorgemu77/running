@@ -71,21 +71,24 @@ export function BarsChart({
   bars,
   height = 260,
   fmt = formatNum,
+  yMax,
 }: {
   data: Record<string, unknown>[];
   xKey: string;
   bars: { key: string; color: string; name?: string }[];
   height?: number;
   fmt?: Fmt;
+  yMax?: number;
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 22, right: 8, left: -16, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
         <XAxis dataKey={xKey} {...axisProps} />
-        <YAxis {...axisProps} />
+        <YAxis {...axisProps} domain={yMax ? [0, yMax] : undefined} />
         <Tooltip
           {...tooltipStyle()}
+          separator=""
           formatter={(value) => [fmt(Number(value)), ""]}
           cursor={{ fill: "rgba(123,132,147,0.06)" }}
         />
@@ -111,9 +114,13 @@ export function BarsChart({
 export function CarrerasPorAnioChart({
   data,
   height = 280,
+  yMax,
+  showTotal = true,
 }: {
   data: { anio: string; COMPETENCIA: number; ACOMPAÑAMIENTO: number }[];
   height?: number;
+  yMax?: number;
+  showTotal?: boolean;
 }) {
   const totales = data.map((d) => d.COMPETENCIA + d.ACOMPAÑAMIENTO);
 
@@ -122,7 +129,7 @@ export function CarrerasPorAnioChart({
       <BarChart data={data} margin={{ top: 22, right: 8, left: -16, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
         <XAxis dataKey="anio" {...axisProps} />
-        <YAxis {...axisProps} allowDecimals={false} />
+        <YAxis {...axisProps} allowDecimals={false} domain={yMax ? [0, yMax] : undefined} />
         <Tooltip {...tooltipStyle()} cursor={{ fill: "rgba(123,132,147,0.06)" }} />
         <Bar dataKey="COMPETENCIA" name="Competencia" stackId="a" fill={TIPO_COLOR.COMPETENCIA} maxBarSize={46}>
           <LabelList
@@ -143,21 +150,23 @@ export function CarrerasPorAnioChart({
             fill={PALETA.ink}
             formatter={(value: unknown) => (Number(value) > 0 ? formatInt(Number(value)) : "")}
           />
-          <LabelList
-            dataKey="ACOMPAÑAMIENTO"
-            position="top"
-            content={(props: { x?: string | number; y?: string | number; width?: string | number; index?: number }) => {
-              const { x, y, width, index } = props;
-              if (index == null) return null;
-              const total = totales[index];
-              const cx = Number(x) + Number(width) / 2;
-              return (
-                <text x={cx} y={Number(y) - 6} textAnchor="middle" fontSize={11} fontWeight={700} fill={PALETA.ink}>
-                  {formatInt(total)}
-                </text>
-              );
-            }}
-          />
+          {showTotal && (
+            <LabelList
+              dataKey="ACOMPAÑAMIENTO"
+              position="top"
+              content={(props: { x?: string | number; y?: string | number; width?: string | number; index?: number }) => {
+                const { x, y, width, index } = props;
+                if (index == null) return null;
+                const total = totales[index];
+                const cx = Number(x) + Number(width) / 2;
+                return (
+                  <text x={cx} y={Number(y) - 6} textAnchor="middle" fontSize={11} fontWeight={700} fill={PALETA.ink}>
+                    {formatInt(total)}
+                  </text>
+                );
+              }}
+            />
+          )}
         </Bar>
       </BarChart>
     </ResponsiveContainer>
@@ -194,7 +203,7 @@ export function AreaTrend({
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
         <XAxis dataKey={xKey} {...axisProps} />
         <YAxis {...axisProps} />
-        <Tooltip {...tooltipStyle()} formatter={(value) => [fmt(Number(value)), ""]} />
+        <Tooltip {...tooltipStyle()} separator="" formatter={(value) => [fmt(Number(value)), ""]} />
         <Area type="monotone" dataKey={yKey} stroke={color} strokeWidth={2.5} fill={`url(#${gid})`} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }}>
           <LabelList
             dataKey={yKey}
@@ -258,11 +267,17 @@ export function RitmoChart({
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={{ top: 24, right: 16, left: 8, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 24, right: 16, left: 0, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
         <XAxis dataKey="label" {...axisProps} />
-        {/* Eje Y oculto, horquilla fija 3:00–6:00 min/Km */}
-        <YAxis hide domain={[180, 360]} />
+        {/* Eje Y visible (min/Km), horquilla fija 3:00–6:00 */}
+        <YAxis
+          {...axisProps}
+          width={44}
+          domain={[180, 360]}
+          ticks={[180, 240, 300, 360]}
+          tickFormatter={(v) => formatRitmoCorto(Number(v))}
+        />
         <Tooltip content={<RitmoTooltip />} />
         <Line
           type="monotone"
@@ -289,7 +304,7 @@ export function RitmoChart({
           <LabelList
             dataKey="ritmo"
             position="top"
-            fontSize={10}
+            fontSize={12}
             fontWeight={600}
             fill={PALETA.ink}
             formatter={(value: unknown) => formatRitmoCorto(Number(value))}

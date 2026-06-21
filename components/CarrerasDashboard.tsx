@@ -5,7 +5,7 @@ import { Trophy, Flag, Gauge, Timer } from "lucide-react";
 import { useAppStore } from "@/lib/store/AppStore";
 import { filtraCategoria, mejorRitmo, mejorTiempo } from "@/lib/data/stats";
 import { categoriaDeDistancia, type RaceRecord } from "@/lib/data/types";
-import { formatKm, formatRitmo, formatTiempo, formatFecha, kmDeDistancia } from "@/lib/format";
+import { formatInt, formatRitmo, formatTiempo, formatFecha, kmDeDistancia } from "@/lib/format";
 import { PageHeader, StatCard, ChartCard, Card, LinkButton, Badge } from "@/components/ui";
 import {
   CarrerasPorAnioChart,
@@ -37,6 +37,15 @@ const MEJOR_LABEL: Record<Cat, string> = {
   POPULAR: "Mejor resultado",
   MEDIA: "Mejor 21K",
   MARATON: "Mejor 42K",
+};
+
+// Tope del eje Y y si se muestra el total encima de las barras apiladas.
+const Y_MAX_ANIOS: Record<Cat, number> = { TODAS: 6, POPULAR: 6, MEDIA: 4, MARATON: 3 };
+const MOSTRAR_TOTAL: Record<Cat, boolean> = {
+  TODAS: false,
+  POPULAR: false,
+  MEDIA: false,
+  MARATON: true,
 };
 
 // Color fijo por distancia (evita colisiones al ciclar colores).
@@ -180,14 +189,19 @@ export function CarrerasDashboard({ categoria }: { categoria: Cat }) {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard icon={<Trophy size={18} />} label="Carreras" value={carreras.length} sub={subtituloCarreras[categoria]} accent="brand" />
-        <StatCard icon={<Flag size={18} />} label={KM_LABEL[categoria]} value={`${formatKm(kmTotales)} km`} sub="Suma de distancias" accent="sky" />
+        <StatCard icon={<Flag size={18} />} label={KM_LABEL[categoria]} value={`${formatInt(kmTotales)} km`} sub="Suma de distancias" accent="sky" />
         <StatCard icon={<Gauge size={18} />} label="Mejor ritmo" value={mRitmo ? formatRitmo(mRitmo.mediaSeg) : "—"} sub={mRitmo ? mRitmo.carrera : "Sin datos"} accent="mint" />
         <StatCard icon={<Timer size={18} />} label={MEJOR_LABEL[categoria]} value={mejorResultado ? formatTiempo(mejorResultado.tiempoSeg) : "—"} sub={mejorResultado ? `${mejorResultado.distancia} | ${mejorResultado.carrera}` : "Sin datos"} accent="sun" />
       </div>
 
       <div className="mt-4 flex flex-col gap-4">
         <ChartCard title="Carreras por año">
-          <CarrerasPorAnioChart data={dataAnios} height={300} />
+          <CarrerasPorAnioChart
+            data={dataAnios}
+            height={300}
+            yMax={Y_MAX_ANIOS[categoria]}
+            showTotal={MOSTRAR_TOTAL[categoria]}
+          />
           <div className="mt-3">
             <Leyenda
               items={[

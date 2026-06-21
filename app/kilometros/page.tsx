@@ -10,7 +10,7 @@ import {
   mediaMensual,
   aniosDisponibles,
 } from "@/lib/data/stats";
-import { formatKm, mesCorto } from "@/lib/format";
+import { formatInt, formatNum, mesCorto } from "@/lib/format";
 import { PageHeader, StatCard, ChartCard, LinkButton } from "@/components/ui";
 import { Select } from "@/components/form";
 import { BarsChart, AreaTrend, PALETA } from "@/components/charts";
@@ -65,28 +65,28 @@ export default function KilometrosDashboard() {
         <StatCard
           icon={<Route size={18} />}
           label="Total histórico"
-          value={`${formatKm(total)} km`}
+          value={`${formatInt(total)} km`}
           sub={`Desde ${anios[anios.length - 1]}`}
           accent="brand"
         />
         <StatCard
           icon={<TrendingUp size={18} />}
           label={`Año ${anioActual.year} (en curso)`}
-          value={`${formatKm(anioActual.km)} km`}
+          value={`${formatInt(anioActual.km)} km`}
           sub="Acumulado del año"
           accent="sky"
         />
         <StatCard
           icon={<Gauge size={18} />}
           label="Media mensual histórico"
-          value={`${formatKm(media)} km`}
+          value={`${formatInt(media)} km`}
           sub="Sobre meses registrados"
           accent="mint"
         />
         <StatCard
           icon={<Trophy size={18} />}
           label="Mejor año"
-          value={`${formatKm(mejorAnio.km)} km`}
+          value={`${formatInt(mejorAnio.km)} km`}
           sub={`En ${mejorAnio.year}`}
           accent="sun"
         />
@@ -98,7 +98,7 @@ export default function KilometrosDashboard() {
             data={dataAnios}
             xKey="anio"
             bars={[{ key: "km", color: PALETA.brand }]}
-            fmt={(v) => `${formatKm(v)} km`}
+            fmt={formatNum}
             height={300}
           />
         </ChartCard>
@@ -108,7 +108,7 @@ export default function KilometrosDashboard() {
             data={estacionalidad}
             xKey="mes"
             bars={[{ key: "km", color: PALETA.sky }]}
-            fmt={(v) => `${formatKm(v)} km`}
+            fmt={formatNum}
             height={300}
           />
         </ChartCard>
@@ -134,7 +134,7 @@ export default function KilometrosDashboard() {
             xKey="mes"
             yKey="km"
             color={PALETA.brand}
-            fmt={(v) => `${formatKm(v)} km`}
+            fmt={formatNum}
             height={300}
           />
         </ChartCard>

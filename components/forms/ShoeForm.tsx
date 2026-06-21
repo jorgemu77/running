@@ -74,7 +74,7 @@ export function ShoeForm({
           </Field>
         </div>
 
-        <Field label="Foto (ruta o URL)" hint="Ej. /zapatillas/mi-modelo.png">
+        <Field label="Foto (URL)" hint="Sube la imagen al bucket «Images» de Supabase Storage y pega aquí su URL pública">
           <Input value={foto} onChange={(e) => setFoto(e.target.value)} placeholder="/zapatillas/…" />
         </Field>
 

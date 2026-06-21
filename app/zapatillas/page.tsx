@@ -4,7 +4,7 @@ import { Footprints, CircleCheck, Route, TriangleAlert } from "lucide-react";
 import { useAppStore } from "@/lib/store/AppStore";
 import { totalKmZapatilla, timelineZapatilla } from "@/lib/data/stats";
 import { LIMITE_KM_ZAPATILLA, type ShoeRecord } from "@/lib/data/types";
-import { formatKm } from "@/lib/format";
+import { formatKm, formatInt, formatNum } from "@/lib/format";
 import { PageHeader, StatCard, Card, Badge, LinkButton } from "@/components/ui";
 import { BarsChart, PALETA } from "@/components/charts";
 
@@ -68,7 +68,8 @@ function ShoeCard({ shoe }: { shoe: ShoeRecord }) {
           data={data}
           xKey="label"
           bars={[{ key: "km", color: barColor }]}
-          fmt={(v) => `${formatKm(v)} km`}
+          fmt={formatNum}
+          yMax={240}
           height={160}
         />
       ) : (
@@ -101,10 +102,10 @@ export default function ZapatillasDashboard() {
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard icon={<Footprints size={18} />} label="Pares totales" value={zapatillas.length} accent="brand" />
-        <StatCard icon={<CircleCheck size={18} />} label="Activas" value={activas.length} sub={`${baja.length} de baja`} accent="mint" />
-        <StatCard icon={<Route size={18} />} label="Km acumulados" value={`${formatKm(kmAcumulados)} km`} sub="Todas las zapatillas" accent="sky" />
-        <StatCard icon={<TriangleAlert size={18} />} label="En aviso" value={enAviso} sub={`> ${LIMITE_KM_ZAPATILLA} km`} accent={enAviso ? "coral" : "sun"} />
+        <StatCard icon={<Footprints size={18} />} label="Zapatillas registradas" value={zapatillas.length} accent="brand" />
+        <StatCard icon={<CircleCheck size={18} />} label="Zapatillas en uso" value={activas.length} sub={`${baja.length} de baja`} accent="mint" />
+        <StatCard icon={<Route size={18} />} label="Km acumulados" value={`${formatInt(kmAcumulados)} km`} sub="Todas las zapatillas" accent="sky" />
+        <StatCard icon={<TriangleAlert size={18} />} label="Zapatillas exceso Km" value={enAviso} sub="Sobrepasado 800Kms" accent={enAviso ? "coral" : "sun"} />
       </div>
 
       <section className="mt-6">

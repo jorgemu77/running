@@ -15,7 +15,7 @@ import {
   LogOut,
   Loader2,
 } from "lucide-react";
-import { cn } from "./ui";
+import { cn, Button } from "./ui";
 import { useAppStore } from "@/lib/store/AppStore";
 
 type NavChild = { label: string; href: string };
@@ -108,14 +108,14 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
 function Logo() {
   return (
-    <div className="flex items-center gap-2.5 px-1">
+    <Link href="/kilometros" className="flex items-center gap-2.5 px-1">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand text-brand-ink">
         <Activity size={20} strokeWidth={2.5} />
       </span>
       <span className="text-[15px] font-bold leading-tight tracking-tight">
         Running <span className="font-extrabold">TRACKER</span>
       </span>
-    </div>
+    </Link>
   );
 }
 
@@ -143,6 +143,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { loading, userEmail, signOut } = useAppStore();
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   // Cerrar el drawer al cambiar de ruta.
   useEffect(() => {
@@ -158,7 +159,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 border-r border-line bg-card p-5 lg:flex">
         <Logo />
         <NavContent />
-        <UserChip email={userEmail} onSignOut={signOut} />
+        <UserChip email={userEmail} onSignOut={() => setConfirmLogout(true)} />
       </aside>
 
       {/* Barra superior (móvil) */}
@@ -192,7 +193,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </button>
             </div>
             <NavContent onNavigate={() => setOpen(false)} />
-            <UserChip email={userEmail} onSignOut={signOut} />
+            <UserChip email={userEmail} onSignOut={() => setConfirmLogout(true)} />
           </aside>
         </div>
       )}
@@ -209,6 +210,27 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         </div>
       </main>
+
+      {/* Popup de confirmación de cierre de sesión */}
+      {confirmLogout && (
+        <div className="fixed inset-0 z-50 grid place-items-center p-4">
+          <div
+            className="absolute inset-0 bg-ink/30 backdrop-blur-sm"
+            onClick={() => setConfirmLogout(false)}
+          />
+          <div className="relative w-full max-w-sm rounded-3xl border border-line bg-card p-6 shadow-xl">
+            <h2 className="text-lg font-bold tracking-tight">¿Estás seguro de cerrar la sesión?</h2>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setConfirmLogout(false)}>
+                Cancelar
+              </Button>
+              <Button variant="primary" onClick={signOut}>
+                Cerrar sesión
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
