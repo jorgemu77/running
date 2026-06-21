@@ -1,9 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { AppStoreProvider } from "@/lib/store/AppStore";
+import { AppShell } from "@/components/AppShell";
 
 export const metadata: Metadata = {
-  title: "running",
-  description: "Aplicación de running",
+  title: "Running TRACKER",
+  description: "Registro y análisis de mi actividad de running",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -13,7 +20,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body>{children}</body>
+      <body>
+        <AppStoreProvider>
+          <AppShell>{children}</AppShell>
+        </AppStoreProvider>
+      </body>
     </html>
   );
 }

@@ -1,24 +1,70 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+@import "tailwindcss";
+
+@theme {
+  /* Superficie y fondo */
+  --color-page: #e9eef6;
+  --color-card: #ffffff;
+  --color-line: #eef1f6;
+
+  /* Texto */
+  --color-ink: #1b2230;
+  --color-muted: #7b8493;
+
+  /* Marca / acentos */
+  --color-brand: #c9ec4b;
+  --color-brand-strong: #b4dd2f;
+  --color-brand-ink: #2c3a06;
+
+  /* Pasteles para gráficos y estados */
+  --color-sky: #9ec9f4;
+  --color-sky-soft: #d4e6fa;
+  --color-sun: #fbd968;
+  --color-sun-soft: #fdeeb8;
+  --color-mint: #bfe88f;
+  --color-mint-soft: #e0f5c8;
+  --color-coral: #f4978e;
+  --color-coral-soft: #fbd7d3;
+
+  /* Radios y sombras */
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
 }
 
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
+  background: var(--color-page);
+  color: var(--color-ink);
   font-family:
     system-ui,
     -apple-system,
     "Segoe UI",
     Roboto,
+    Helvetica,
+    Arial,
     sans-serif;
-  background: #0a0a0a;
-  color: #ededed;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Scrollbar discreta */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cfd6e2;
+  border-radius: 999px;
+  border: 2px solid var(--color-page);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
 }
