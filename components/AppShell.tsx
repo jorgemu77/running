@@ -246,22 +246,22 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden flex-col gap-6 border-r border-line bg-card transition-[width] lg:flex",
-          collapsed ? "w-20 p-3" : "w-64 p-5",
+          collapsed ? "w-24 p-2.5" : "w-64 p-5",
         )}
       >
-        <Logo collapsed={collapsed} />
-        <NavContent collapsed={collapsed} />
-        <div className={cn("flex flex-col gap-2", collapsed && "items-center")}>
+        <div className="flex items-center justify-between gap-1">
+          <Logo collapsed={collapsed} />
           <button
             onClick={toggleCollapsed}
             title={collapsed ? "Expandir menú" : "Compactar menú"}
             aria-label={collapsed ? "Expandir menú" : "Compactar menú"}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-page hover:text-ink"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-page hover:text-ink"
           >
             {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
           </button>
-          <UserChip email={userEmail} collapsed={collapsed} onSignOut={() => setConfirmLogout(true)} />
         </div>
+        <NavContent collapsed={collapsed} />
+        <UserChip email={userEmail} collapsed={collapsed} onSignOut={() => setConfirmLogout(true)} />
       </aside>
 
       {/* Barra superior (móvil) */}
@@ -301,7 +301,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Contenido */}
-      <main className={cn("transition-[padding]", collapsed ? "lg:pl-20" : "lg:pl-64")}>
+      <main className={cn("transition-[padding]", collapsed ? "lg:pl-24" : "lg:pl-64")}>
         <div className="mx-auto w-full max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {loading ? (
             <div className="flex min-h-[60vh] items-center justify-center text-muted">
