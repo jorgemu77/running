@@ -8,25 +8,25 @@ import { categoriaDeDistancia } from "@/lib/data/types";
 import { formatTiempo, formatRitmo, formatRitmoCorto, formatFecha } from "@/lib/format";
 import { descargaCsv } from "@/lib/csv";
 import { PageHeader, Card, LinkButton, Button, IconButton, EmptyState, Badge } from "@/components/ui";
-import { FilterBar, FilterField, Select, Input } from "@/components/form";
+import { FilterBar, FilterField, FilterBox, CheckDropdown, Input } from "@/components/form";
 
 export default function CarrerasRegistro() {
   const { eventos, deleteRace } = useAppStore();
   const router = useRouter();
 
   const [texto, setTexto] = useState("");
-  const [fAnio, setFAnio] = useState("");
-  const [fDist, setFDist] = useState("");
-  const [fCat, setFCat] = useState("");
-  const [fTipo, setFTipo] = useState("");
-  const [fEstilo, setFEstilo] = useState("");
+  const [fAnio, setFAnio] = useState<string[]>([]);
+  const [fDist, setFDist] = useState<string[]>([]);
+  const [fCat, setFCat] = useState<string[]>([]);
+  const [fTipo, setFTipo] = useState<string[]>([]);
+  const [fEstilo, setFEstilo] = useState<string[]>([]);
 
   const anios = useMemo(
-    () => [...new Set(eventos.map((r) => Number(r.fecha.slice(0, 4))))].sort((a, b) => b - a),
+    () => [...new Set(eventos.map((r) => r.fecha.slice(0, 4)))].sort((a, b) => b.localeCompare(a)),
     [eventos],
   );
   const distancias = useMemo(
-    () => [...new Set(eventos.map((r) => r.distancia))],
+    () => [...new Set(eventos.map((r) => r.distancia))].sort(),
     [eventos],
   );
 
@@ -34,11 +34,11 @@ export default function CarrerasRegistro() {
     const q = texto.trim().toLowerCase();
     return eventos
       .filter((r) => (q ? (r.carrera + " " + r.lugar).toLowerCase().includes(q) : true))
-      .filter((r) => (fAnio ? r.fecha.startsWith(fAnio) : true))
-      .filter((r) => (fDist ? r.distancia === fDist : true))
-      .filter((r) => (fCat ? categoriaDeDistancia(r.distancia) === fCat : true))
-      .filter((r) => (fTipo ? r.tipo === fTipo : true))
-      .filter((r) => (fEstilo ? r.estilo === fEstilo : true))
+      .filter((r) => (fAnio.length ? fAnio.includes(r.fecha.slice(0, 4)) : true))
+      .filter((r) => (fDist.length ? fDist.includes(r.distancia) : true))
+      .filter((r) => (fCat.length ? fCat.includes(categoriaDeDistancia(r.distancia)) : true))
+      .filter((r) => (fTipo.length ? fTipo.includes(r.tipo) : true))
+      .filter((r) => (fEstilo.length ? fEstilo.includes(r.estilo) : true))
       .sort((a, b) => b.fecha.localeCompare(a.fecha));
   }, [eventos, texto, fAnio, fDist, fCat, fTipo, fEstilo]);
 
@@ -63,11 +63,11 @@ export default function CarrerasRegistro() {
 
   function limpiar() {
     setTexto("");
-    setFAnio("");
-    setFDist("");
-    setFCat("");
-    setFTipo("");
-    setFEstilo("");
+    setFAnio([]);
+    setFDist([]);
+    setFCat([]);
+    setFTipo([]);
+    setFEstilo([]);
   }
 
   return (
@@ -102,44 +102,51 @@ export default function CarrerasRegistro() {
             />
           </div>
         </FilterField>
-        <FilterField label="Año">
-          <Select value={fAnio} onChange={(e) => setFAnio(e.target.value)}>
-            <option value="">Todos</option>
-            {anios.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </Select>
-        </FilterField>
-        <FilterField label="Distancia">
-          <Select value={fDist} onChange={(e) => setFDist(e.target.value)}>
-            <option value="">Todas</option>
-            {distancias.map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </Select>
-        </FilterField>
-        <FilterField label="Categoría">
-          <Select value={fCat} onChange={(e) => setFCat(e.target.value)}>
-            <option value="">Todas</option>
-            <option value="POPULAR">Populares</option>
-            <option value="MEDIA">Medias</option>
-            <option value="MARATON">Maratones</option>
-          </Select>
-        </FilterField>
-        <FilterField label="Tipo">
-          <Select value={fTipo} onChange={(e) => setFTipo(e.target.value)}>
-            <option value="">Todos</option>
-            <option value="COMPETENCIA">Competencia</option>
-            <option value="ACOMPAÑAMIENTO">Acompañamiento</option>
-          </Select>
-        </FilterField>
-        <FilterField label="Estilo">
-          <Select value={fEstilo} onChange={(e) => setFEstilo(e.target.value)}>
-            <option value="">Todos</option>
-            <option value="ASFALTO">Asfalto</option>
-            <option value="TRAIL">Trail</option>
-          </Select>
-        </FilterField>
+        <FilterBox label="Año">
+          <CheckDropdown
+            options={anios.map((y) => ({ value: y, label: y }))}
+            selected={fAnio}
+            onChange={setFAnio}
+          />
+        </FilterBox>
+        <FilterBox label="Distancia">
+          <CheckDropdown
+            options={distancias.map((d) => ({ value: d, label: d }))}
+            selected={fDist}
+            onChange={setFDist}
+          />
+        </FilterBox>
+        <FilterBox label="Categoría">
+          <CheckDropdown
+            options={[
+              { value: "POPULAR", label: "Populares" },
+              { value: "MEDIA", label: "Medias" },
+              { value: "MARATON", label: "Maratones" },
+            ]}
+            selected={fCat}
+            onChange={setFCat}
+          />
+        </FilterBox>
+        <FilterBox label="Tipo">
+          <CheckDropdown
+            options={[
+              { value: "COMPETENCIA", label: "Competencia" },
+              { value: "ACOMPAÑAMIENTO", label: "Acompañamiento" },
+            ]}
+            selected={fTipo}
+            onChange={setFTipo}
+          />
+        </FilterBox>
+        <FilterBox label="Estilo">
+          <CheckDropdown
+            options={[
+              { value: "ASFALTO", label: "Asfalto" },
+              { value: "TRAIL", label: "Trail" },
+            ]}
+            selected={fEstilo}
+            onChange={setFEstilo}
+          />
+        </FilterBox>
         <Button variant="ghost" onClick={limpiar}>Limpiar</Button>
       </FilterBar>
 
@@ -153,7 +160,6 @@ export default function CarrerasRegistro() {
             <table className="w-full min-w-[900px] text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
-                  <th className="px-4 py-3 font-semibold">Acciones</th>
                   <th className="px-4 py-3 font-semibold">Fecha</th>
                   <th className="px-4 py-3 font-semibold">Carrera</th>
                   <th className="px-4 py-3 font-semibold">Lugar</th>
@@ -163,21 +169,12 @@ export default function CarrerasRegistro() {
                   <th className="px-4 py-3 text-right font-semibold">Tiempo</th>
                   <th className="px-4 py-3 text-right font-semibold">Ritmo</th>
                   <th className="px-4 py-3 text-right font-semibold">Pos.</th>
+                  <th className="px-4 py-3 font-semibold">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filtrados.map((r) => (
                   <tr key={r.id} className="border-b border-line last:border-0 hover:bg-page/50">
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-1.5">
-                        <IconButton title="Modificar" onClick={() => router.push(`/carreras/registro/${r.id}/editar`)}>
-                          <Pencil size={15} />
-                        </IconButton>
-                        <IconButton title="Borrar" className="hover:bg-coral-soft hover:text-rose-700" onClick={() => borrar(r.id, r.carrera)}>
-                          <Trash2 size={15} />
-                        </IconButton>
-                      </div>
-                    </td>
                     <td className="px-4 py-2.5 whitespace-nowrap text-muted">{formatFecha(r.fecha)}</td>
                     <td className="px-4 py-2.5 font-medium">{r.carrera}</td>
                     <td className="px-4 py-2.5 text-muted">{r.lugar}</td>
@@ -191,6 +188,16 @@ export default function CarrerasRegistro() {
                     <td className="px-4 py-2.5 text-right font-semibold whitespace-nowrap">{formatTiempo(r.tiempoSeg)}</td>
                     <td className="px-4 py-2.5 text-right whitespace-nowrap">{formatRitmo(r.mediaSeg)}</td>
                     <td className="px-4 py-2.5 text-right text-muted">{r.posicion ?? "—"}</td>
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-1.5">
+                        <IconButton title="Modificar" onClick={() => router.push(`/carreras/registro/${r.id}/editar`)}>
+                          <Pencil size={15} />
+                        </IconButton>
+                        <IconButton title="Borrar" className="text-rose-600 hover:bg-coral-soft hover:text-rose-700" onClick={() => borrar(r.id, r.carrera)}>
+                          <Trash2 size={15} />
+                        </IconButton>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -229,8 +229,8 @@ export default function ZapatillasRegistro() {
       {/* Modal: km de un mes/año concreto */}
       {kmShoe && (
         <div className="fixed inset-0 z-50 grid place-items-center p-4">
-          <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" onClick={() => setKmShoe(null)} />
-          <div className="relative w-full max-w-md rounded-3xl border border-line bg-card p-6 shadow-xl">
+          <div className="absolute inset-0 z-0 bg-ink/40" onClick={() => setKmShoe(null)} />
+          <div className="relative z-10 w-full max-w-md rounded-3xl border border-line bg-card p-6 shadow-xl">
             <h2 className="text-lg font-bold tracking-tight">Km del mes</h2>
             <div className="mx-auto mt-3 grid aspect-square w-full max-w-[180px] place-items-center overflow-hidden rounded-2xl bg-page">
               {kmShoe.foto ? (
@@ -287,8 +287,8 @@ export default function ZapatillasRegistro() {
       {/* Modal: confirmar borrado de zapatilla */}
       {borrarTarget && (
         <div className="fixed inset-0 z-50 grid place-items-center p-4">
-          <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" onClick={() => setBorrarTarget(null)} />
-          <div className="relative w-full max-w-sm rounded-3xl border border-line bg-card p-6 shadow-xl">
+          <div className="absolute inset-0 z-0 bg-ink/40" onClick={() => setBorrarTarget(null)} />
+          <div className="relative z-10 w-full max-w-sm rounded-3xl border border-line bg-card p-6 shadow-xl">
             <h2 className="text-lg font-bold tracking-tight">¿Borrar la zapatilla?</h2>
             <p className="mt-1 text-sm text-muted">
               Se borrará «{borrarTarget.nombre}» y todos sus registros de kilómetros. Esta acción no se

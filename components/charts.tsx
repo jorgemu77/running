@@ -193,7 +193,7 @@ export function AreaTrend({
   const gid = `grad-${yKey}`;
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <AreaChart data={data} margin={{ top: 24, right: 12, left: -16, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 24, right: 12, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity={0.35} />
@@ -202,7 +202,7 @@ export function AreaTrend({
         </defs>
         <CartesianGrid vertical={false} stroke={PALETA.grid} />
         <XAxis dataKey={xKey} {...axisProps} />
-        <YAxis {...axisProps} />
+        <YAxis {...axisProps} width={44} tick={{ fontSize: 13, fill: PALETA.muted }} />
         <Tooltip {...tooltipStyle()} separator="" formatter={(value) => [fmt(Number(value)), ""]} />
         <Area type="monotone" dataKey={yKey} stroke={color} strokeWidth={2.5} fill={`url(#${gid})`} dot={{ r: 3, fill: color }} activeDot={{ r: 5 }}>
           <LabelList

@@ -116,17 +116,19 @@ export default function KilometrosDashboard() {
         <ChartCard
           title={`Kilómetros por mes y año | ${anio}`}
           action={
-            <Select
-              value={anio}
-              onChange={(e) => setAnio(Number(e.target.value))}
-              className="w-28 py-1.5 text-sm"
-            >
-              {anios.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </Select>
+            <div className="w-24">
+              <Select
+                value={anio}
+                onChange={(e) => setAnio(Number(e.target.value))}
+                className="py-1.5 text-sm"
+              >
+                {anios.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </Select>
+            </div>
           }
         >
           <AreaTrend

@@ -317,16 +317,16 @@ export function AppShell({ children }: { children: ReactNode }) {
       {confirmLogout && (
         <div className="fixed inset-0 z-50 grid place-items-center p-4">
           <div
-            className="absolute inset-0 bg-ink/30 backdrop-blur-sm"
+            className="absolute inset-0 z-0 bg-ink/40"
             onClick={() => setConfirmLogout(false)}
           />
-          <div className="relative w-full max-w-sm rounded-3xl border border-line bg-card p-6 shadow-xl">
+          <div className="relative z-10 w-full max-w-sm rounded-3xl border border-line bg-card p-6 shadow-xl">
             <h2 className="text-lg font-bold tracking-tight">¿Estás seguro de cerrar la sesión?</h2>
             <div className="mt-5 flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setConfirmLogout(false)}>
+              <Button type="button" variant="secondary" onClick={() => setConfirmLogout(false)}>
                 Cancelar
               </Button>
-              <Button variant="primary" onClick={signOut}>
+              <Button type="button" variant="primary" onClick={signOut}>
                 Cerrar sesión
               </Button>
             </div>

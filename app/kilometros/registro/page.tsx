@@ -113,15 +113,18 @@ export default function KilometrosRegistro() {
             <table className="w-full min-w-[480px] text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
-                  <th className="px-5 py-3 font-semibold">Acciones</th>
                   <th className="px-5 py-3 font-semibold">Año</th>
                   <th className="px-5 py-3 font-semibold">Mes</th>
                   <th className="px-5 py-3 text-right font-semibold">Km</th>
+                  <th className="px-5 py-3 font-semibold">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {filtrados.map((r) => (
                   <tr key={r.id} className="border-b border-line last:border-0 hover:bg-page/50">
+                    <td className="px-5 py-2.5 font-medium">{r.year}</td>
+                    <td className="px-5 py-2.5">{mesLargo(r.month)}</td>
+                    <td className="px-5 py-2.5 text-right font-semibold">{formatKm(r.km)}</td>
                     <td className="px-5 py-2.5">
                       <div className="flex items-center gap-1.5">
                         <IconButton
@@ -132,16 +135,13 @@ export default function KilometrosRegistro() {
                         </IconButton>
                         <IconButton
                           title="Borrar"
-                          className="hover:bg-coral-soft hover:text-rose-700"
+                          className="text-rose-600 hover:bg-coral-soft hover:text-rose-700"
                           onClick={() => borrar(r.id, `${mesLargo(r.month)} ${r.year}`)}
                         >
                           <Trash2 size={15} />
                         </IconButton>
                       </div>
                     </td>
-                    <td className="px-5 py-2.5 font-medium">{r.year}</td>
-                    <td className="px-5 py-2.5">{mesLargo(r.month)}</td>
-                    <td className="px-5 py-2.5 text-right font-semibold">{formatKm(r.km)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -126,7 +126,7 @@ export default function ZapatillasDashboard() {
       {baja.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
-            <span className="h-2 w-2 rounded-full bg-muted" /> Baja / inactivas ({baja.length})
+            <span className="h-2 w-2 rounded-full bg-muted" /> Inactivas ({baja.length})
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {baja.map((z) => (
