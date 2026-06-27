@@ -147,3 +147,20 @@ export async function deleteShoe(sb: SB, id: string) {
   const { error } = await sb.from("zapatillas").delete().eq("id", id);
   if (error) throw error;
 }
+
+/** Registra o actualiza los km de un mes/año concreto de una zapatilla. */
+export async function upsertShoeMonth(
+  sb: SB,
+  zapatillaId: string,
+  year: number,
+  month: number,
+  km: number,
+) {
+  const { error } = await sb
+    .from("zapatilla_km")
+    .upsert(
+      { zapatilla_id: zapatillaId, anio: year, mes: month, km },
+      { onConflict: "zapatilla_id,anio,mes" },
+    );
+  if (error) throw error;
+}

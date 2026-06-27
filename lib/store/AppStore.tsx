@@ -33,6 +33,7 @@ type AppStore = {
   addShoe: (r: Omit<ShoeRecord, "id">) => Promise<void>;
   updateShoe: (id: string, r: Omit<ShoeRecord, "id">) => Promise<void>;
   deleteShoe: (id: string) => Promise<void>;
+  setShoeMonth: (zapatillaId: string, year: number, month: number, km: number) => Promise<void>;
 
   signOut: () => Promise<void>;
 };
@@ -134,6 +135,10 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     },
     deleteShoe: async (id) => {
       await api.deleteShoe(supabase, id);
+      await reloadShoes();
+    },
+    setShoeMonth: async (zapatillaId, year, month, km) => {
+      await api.upsertShoeMonth(supabase, zapatillaId, year, month, km);
       await reloadShoes();
     },
 

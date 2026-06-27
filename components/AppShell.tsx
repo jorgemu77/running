@@ -11,9 +11,10 @@ import {
   Menu,
   X,
   ChevronDown,
-  CircleUser,
   LogOut,
   Loader2,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { cn, Button } from "./ui";
 import { useAppStore } from "@/lib/store/AppStore";
@@ -47,8 +48,52 @@ function esActiva(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-function NavContent({ onNavigate }: { onNavigate?: () => void }) {
+function Avatar({ email, className }: { email: string | null; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "grid shrink-0 place-items-center rounded-full bg-brand font-bold text-ink",
+        className,
+      )}
+    >
+      {(email?.[0] ?? "?").toUpperCase()}
+    </span>
+  );
+}
+
+function NavContent({
+  onNavigate,
+  collapsed,
+}: {
+  onNavigate?: () => void;
+  collapsed?: boolean;
+}) {
   const pathname = usePathname();
+
+  if (collapsed) {
+    return (
+      <nav className="flex flex-1 flex-col gap-1">
+        {NAV.map((item) => {
+          const seccionActiva = pathname.startsWith(item.href);
+          const activa = esActiva(pathname, item.href) || (item.children && seccionActiva);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              title={item.label}
+              className={cn(
+                "flex h-11 items-center justify-center rounded-2xl transition-colors",
+                activa ? "bg-brand text-brand-ink" : "text-muted hover:bg-line hover:text-ink",
+              )}
+            >
+              {item.icon}
+            </Link>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <nav className="flex flex-1 flex-col gap-1">
@@ -88,9 +133,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
                       onClick={onNavigate}
                       className={cn(
                         "rounded-lg px-3 py-1.5 text-sm transition-colors",
-                        activa
-                          ? "font-semibold text-ink"
-                          : "text-muted hover:text-ink",
+                        activa ? "font-semibold text-ink" : "text-muted hover:text-ink",
                       )}
                     >
                       {child.label}
@@ -106,35 +149,61 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function Logo() {
+function Logo({ collapsed }: { collapsed?: boolean }) {
   return (
-    <Link href="/kilometros" className="flex items-center gap-2.5 px-1">
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand text-brand-ink">
+    <Link
+      href="/kilometros"
+      className={cn("flex items-center gap-2.5", collapsed ? "justify-center" : "px-1")}
+    >
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-brand-ink">
         <Activity size={20} strokeWidth={2.5} />
       </span>
-      <span className="text-[15px] font-bold leading-tight tracking-tight">
-        Running <span className="font-extrabold">TRACKER</span>
-      </span>
+      {!collapsed && (
+        <span className="text-[15px] font-bold leading-tight tracking-tight">
+          Running <span className="font-extrabold">TRACKER</span>
+        </span>
+      )}
     </Link>
   );
 }
 
-function UserChip({ email, onSignOut }: { email: string | null; onSignOut: () => void }) {
+function UserChip({
+  email,
+  onSignOut,
+  collapsed,
+}: {
+  email: string | null;
+  onSignOut: () => void;
+  collapsed?: boolean;
+}) {
+  const logoutBtn = (
+    <button
+      onClick={onSignOut}
+      title="Cerrar sesión"
+      className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-page hover:text-ink"
+      aria-label="Cerrar sesión"
+    >
+      <LogOut size={16} />
+    </button>
+  );
+
+  if (collapsed) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <Avatar email={email} className="h-9 w-9 text-sm" />
+        {logoutBtn}
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-line bg-page/60 p-3">
-      <CircleUser size={32} className="shrink-0 text-muted" />
+      <Avatar email={email} className="h-9 w-9 text-sm" />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold">{email ?? "—"}</div>
         <div className="truncate text-xs text-muted">Sesión iniciada</div>
       </div>
-      <button
-        onClick={onSignOut}
-        title="Cerrar sesión"
-        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-page hover:text-ink"
-        aria-label="Cerrar sesión"
-      >
-        <LogOut size={16} />
-      </button>
+      {logoutBtn}
     </div>
   );
 }
@@ -144,11 +213,29 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const { loading, userEmail, signOut } = useAppStore();
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Cerrar el drawer al cambiar de ruta.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  // Recordar el estado compacto del menú.
+  useEffect(() => {
+    if (localStorage.getItem("sidebar-collapsed") === "1") setCollapsed(true);
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem("sidebar-collapsed", next ? "1" : "0");
+      } catch {
+        // ignorar
+      }
+      return next;
+    });
+  }
 
   // La página de login se muestra sin el armazón (sidebar, etc.).
   if (pathname === "/login") return <>{children}</>;
@@ -156,10 +243,25 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       {/* Sidebar fijo (desktop) */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col gap-6 border-r border-line bg-card p-5 lg:flex">
-        <Logo />
-        <NavContent />
-        <UserChip email={userEmail} onSignOut={() => setConfirmLogout(true)} />
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-30 hidden flex-col gap-6 border-r border-line bg-card transition-[width] lg:flex",
+          collapsed ? "w-20 p-3" : "w-64 p-5",
+        )}
+      >
+        <Logo collapsed={collapsed} />
+        <NavContent collapsed={collapsed} />
+        <div className={cn("flex flex-col gap-2", collapsed && "items-center")}>
+          <button
+            onClick={toggleCollapsed}
+            title={collapsed ? "Expandir menú" : "Compactar menú"}
+            aria-label={collapsed ? "Expandir menú" : "Compactar menú"}
+            className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:bg-page hover:text-ink"
+          >
+            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+          </button>
+          <UserChip email={userEmail} collapsed={collapsed} onSignOut={() => setConfirmLogout(true)} />
+        </div>
       </aside>
 
       {/* Barra superior (móvil) */}
@@ -199,7 +301,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       {/* Contenido */}
-      <main className="lg:pl-64">
+      <main className={cn("transition-[padding]", collapsed ? "lg:pl-20" : "lg:pl-64")}>
         <div className="mx-auto w-full max-w-[1200px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {loading ? (
             <div className="flex min-h-[60vh] items-center justify-center text-muted">
