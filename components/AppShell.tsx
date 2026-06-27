@@ -200,7 +200,7 @@ function UserChip({
     <div className="flex items-center gap-3 rounded-2xl border border-line bg-page/60 p-3">
       <Avatar email={email} className="h-9 w-9 text-sm" />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-semibold">{email ?? "—"}</div>
+        <div className="truncate text-sm font-semibold">{email ? email.split("@")[0] : "—"}</div>
         <div className="truncate text-xs text-muted">Sesión iniciada</div>
       </div>
       {logoutBtn}

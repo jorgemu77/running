@@ -39,6 +39,7 @@ export default function ZapatillasRegistro() {
   const [kmMonth, setKmMonth] = useState(ahora.getMonth() + 1);
   const [kmValor, setKmValor] = useState("0");
   const [guardando, setGuardando] = useState(false);
+  const [borrarTarget, setBorrarTarget] = useState<{ id: string; nombre: string } | null>(null);
 
   // Al cambiar zapatilla/año/mes, mostrar el valor existente para ese mes.
   useEffect(() => {
@@ -90,8 +91,11 @@ export default function ZapatillasRegistro() {
     ]);
   }
 
-  function borrar(id: string, nombre: string) {
-    if (confirm(`¿Borrar "${nombre}"?`)) deleteShoe(id);
+  async function confirmarBorrado() {
+    if (!borrarTarget) return;
+    const { id } = borrarTarget;
+    setBorrarTarget(null);
+    await deleteShoe(id);
   }
 
   return (
@@ -155,11 +159,11 @@ export default function ZapatillasRegistro() {
             <table className="w-full min-w-[640px] text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
-                  <th className="px-5 py-3 font-semibold">Acciones</th>
                   <th className="px-5 py-3 font-semibold">Zapatilla</th>
                   <th className="px-5 py-3 font-semibold">Marca</th>
                   <th className="px-5 py-3 font-semibold">Estado</th>
                   <th className="px-5 py-3 text-right font-semibold">Km totales</th>
+                  <th className="px-5 py-3 font-semibold">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -167,23 +171,6 @@ export default function ZapatillasRegistro() {
                   const supera = z.total > LIMITE_KM_ZAPATILLA;
                   return (
                     <tr key={z.id} className="border-b border-line last:border-0 hover:bg-page/50">
-                      <td className="px-5 py-2.5">
-                        <div className="flex items-center gap-1.5">
-                          <IconButton
-                            title="Registrar km del mes"
-                            className="hover:bg-brand/30 hover:text-brand-ink"
-                            onClick={() => abrirKm(z)}
-                          >
-                            <CalendarPlus size={15} />
-                          </IconButton>
-                          <IconButton title="Modificar" onClick={() => router.push(`/zapatillas/registro/${z.id}/editar`)}>
-                            <Pencil size={15} />
-                          </IconButton>
-                          <IconButton title="Borrar" className="hover:bg-coral-soft hover:text-rose-700" onClick={() => borrar(z.id, z.nombre)}>
-                            <Trash2 size={15} />
-                          </IconButton>
-                        </div>
-                      </td>
                       <td className="px-5 py-2.5">
                         <div className="flex items-center gap-3">
                           <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-page">
@@ -209,6 +196,27 @@ export default function ZapatillasRegistro() {
                           {formatKm(z.total)} km
                         </span>
                       </td>
+                      <td className="px-5 py-2.5">
+                        <div className="flex items-center gap-1.5">
+                          <IconButton
+                            title="Registrar km del mes"
+                            className="hover:bg-brand/30 hover:text-brand-ink"
+                            onClick={() => abrirKm(z)}
+                          >
+                            <CalendarPlus size={15} />
+                          </IconButton>
+                          <IconButton title="Modificar" onClick={() => router.push(`/zapatillas/registro/${z.id}/editar`)}>
+                            <Pencil size={15} />
+                          </IconButton>
+                          <IconButton
+                            title="Borrar"
+                            className="text-rose-600 hover:bg-coral-soft hover:text-rose-700"
+                            onClick={() => setBorrarTarget({ id: z.id, nombre: z.nombre })}
+                          >
+                            <Trash2 size={15} />
+                          </IconButton>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -224,7 +232,15 @@ export default function ZapatillasRegistro() {
           <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" onClick={() => setKmShoe(null)} />
           <div className="relative w-full max-w-md rounded-3xl border border-line bg-card p-6 shadow-xl">
             <h2 className="text-lg font-bold tracking-tight">Km del mes</h2>
-            <p className="mt-0.5 text-sm text-muted">{kmShoe.nombre}</p>
+            <div className="mx-auto mt-3 grid aspect-square w-full max-w-[180px] place-items-center overflow-hidden rounded-2xl bg-page">
+              {kmShoe.foto ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={kmShoe.foto} alt={kmShoe.nombre} className="h-full w-full object-contain" />
+              ) : (
+                <Footprints className="text-muted" />
+              )}
+            </div>
+            <p className="mt-2 text-center text-sm text-muted">{kmShoe.nombre}</p>
 
             <div className="mt-5 grid grid-cols-2 gap-4">
               <Field label="Año">
@@ -244,7 +260,7 @@ export default function ZapatillasRegistro() {
             </div>
 
             <div className="mt-4">
-              <Field label="Kilómetros mes" hint="Valor existente para ese mes (edítalo) o 0 para registrarlo">
+              <Field label="Kilómetros mes">
                 <Input
                   type="number"
                   inputMode="decimal"
@@ -262,6 +278,28 @@ export default function ZapatillasRegistro() {
               </Button>
               <Button variant="primary" onClick={guardarKm} disabled={guardando}>
                 {guardando ? "Guardando…" : "Guardar"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: confirmar borrado de zapatilla */}
+      {borrarTarget && (
+        <div className="fixed inset-0 z-50 grid place-items-center p-4">
+          <div className="absolute inset-0 bg-ink/30 backdrop-blur-sm" onClick={() => setBorrarTarget(null)} />
+          <div className="relative w-full max-w-sm rounded-3xl border border-line bg-card p-6 shadow-xl">
+            <h2 className="text-lg font-bold tracking-tight">¿Borrar la zapatilla?</h2>
+            <p className="mt-1 text-sm text-muted">
+              Se borrará «{borrarTarget.nombre}» y todos sus registros de kilómetros. Esta acción no se
+              puede deshacer.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setBorrarTarget(null)}>
+                Cancelar
+              </Button>
+              <Button variant="danger" onClick={confirmarBorrado}>
+                Borrar
               </Button>
             </div>
           </div>
