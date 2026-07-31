@@ -237,8 +237,8 @@ export function AppShell({ children }: { children: ReactNode }) {
     });
   }
 
-  // La página de login se muestra sin el armazón (sidebar, etc.).
-  if (pathname === "/login") return <>{children}</>;
+  // El login y las pantallas de recuperación se muestran sin el armazón.
+  if (pathname === "/login" || pathname.startsWith("/auth/")) return <>{children}</>;
 
   return (
     <div className="min-h-screen">

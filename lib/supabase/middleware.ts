@@ -46,8 +46,12 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
-  // Sin sesión: solo se permite /login.
-  if (!user && path !== "/login") {
+  // Rutas accesibles sin sesión: login y el flujo de recuperación por correo
+  // (el enlace del email llega sin sesión y debe poder canjear su token).
+  const esPublica = path === "/login" || path.startsWith("/auth/");
+
+  // Sin sesión: solo se permiten las rutas públicas.
+  if (!user && !esPublica) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     const redirect = NextResponse.redirect(redirectUrl);
