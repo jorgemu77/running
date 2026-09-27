@@ -143,6 +143,46 @@ create policy "own_<tabla>" on public.<tabla>
 Como `user_id` tiene `default auth.uid()`, las inserciones desde la aplicación asignan
 el propietario automáticamente; el frontend nunca envía ese campo.
 
+### Crear tablas nuevas (permisos explícitos obligatorios)
+
+Desde el **30 de octubre de 2026**, Supabase deja de dar acceso automático a la API
+(supabase-js / PostgREST) a las tablas **nuevas** del esquema `public`. Las cuatro tablas
+actuales conservan sus permisos y no requieren ningún cambio.
+
+Cualquier tabla nueva debe crearse, **en la misma migración**, con estos tres pasos:
+permisos, RLS y política. Si falta el `grant`, la aplicación recibirá un error
+`permission denied` aunque la tabla y el RLS estén bien.
+
+```sql
+create table public.<tabla> (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null default auth.uid() references auth.users on delete cascade,
+  -- ...columnas...
+  created_at timestamptz not null default now()
+);
+
+-- 1. Permisos de la API (solo usuarios con sesión y el rol de servicio)
+grant select, insert, update, delete on public.<tabla> to authenticated;
+grant select, insert, update, delete on public.<tabla> to service_role;
+
+-- 2. RLS
+alter table public.<tabla> enable row level security;
+
+-- 3. Política: cada usuario solo ve y modifica sus filas
+create policy "own_<tabla>" on public.<tabla>
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+```
+
+No se concede nada al rol `anon`: la aplicación exige iniciar sesión para todo, así
+que los visitantes anónimos no necesitan acceso. Si alguna vez hiciera falta una
+tabla de lectura pública, añadir `grant select on public.<tabla> to anon;` junto con
+una política `for select to anon` específica.
+
+Tras crear la tabla, revisar *Advisors* y comprobar en *Project Settings → Data API*
+que aparece como expuesta.
+
 ---
 
 ## 4. Almacenamiento
