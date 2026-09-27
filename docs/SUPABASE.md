@@ -111,6 +111,7 @@ propios datos.
 | `esquema_inicial_running` | Tablas, tipos enumerados, índices y RLS inicial |
 | `bloquear_rls_usuario_unico` | Restricción temporal a un único propietario |
 | `multiusuario_datos_por_usuario` | Columna `user_id`, unicidad por usuario y RLS definitivo |
+| `revocar_acceso_anon` | Retira al rol `anon` todos los permisos sobre las cuatro tablas |
 
 ### Tablas
 
@@ -176,7 +177,9 @@ create policy "own_<tabla>" on public.<tabla>
 ```
 
 No se concede nada al rol `anon`: la aplicación exige iniciar sesión para todo, así
-que los visitantes anónimos no necesitan acceso. Si alguna vez hiciera falta una
+que los visitantes anónimos no necesitan acceso. Las cuatro tablas actuales siguen el
+mismo criterio desde la migración `revocar_acceso_anon`: solo `authenticated` y
+`service_role` tienen permisos. Si alguna vez hiciera falta una
 tabla de lectura pública, añadir `grant select on public.<tabla> to anon;` junto con
 una política `for select to anon` específica.
 
